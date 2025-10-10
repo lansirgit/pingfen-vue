@@ -21,7 +21,19 @@
           hide-required-asterisk
           >
 
-          <el-form-item label="参加项目" prop="project">
+          <el-form-item label="参加赛道" prop="track">
+            <el-select 
+              v-model="form.track" 
+              placeholder="请选择参赛赛道" 
+              @change="handTrackChange"
+              clearable
+            >
+              <el-option 
+                v-for="item in trackList" :key="item.id" :label="item.name" :value="item.name" />
+            </el-select>
+          </el-form-item>
+
+          <el-form-item label="参加项目" prop="project" v-if="form.track">
             <el-select 
               v-model="form.project" 
               placeholder="请选择参赛项目" 
@@ -29,7 +41,7 @@
               clearable
             >
               <el-option
-                v-for="item in projectsList"
+                v-for="item in currentProjectsList"
                 :key="item.id"
                 :label="item.name"
                 :value="item.id"
@@ -88,7 +100,7 @@
                 </el-input>
               </el-form-item>
 
-              <el-form-item label="指导老师" prop="adviser">
+              <el-form-item label="指导老师" prop="adviser" v-if="form.track==='学生赛道'">
                 <el-input
                   v-model="form.adviser"
                   placeholder="请输入指导老师姓名"
@@ -110,17 +122,36 @@
                 ></el-input>
               </el-form-item>
             </div>
+
+            
     
             <div class="upload-section">
               <h3 class="section-title">作品上传</h3>
-              <el-form-item label="视频上传" prop="videoUpload">
+
+              <!-- 提交类型选择 -->
+              <el-form-item label="选择提交类型" prop="entryType" v-show="currentEntryTypes && currentEntryTypes.length > 1">
+                <el-select 
+                  placeholder="请选择提交类型" 
+                  v-model="form.entryType"
+                  @change="handEntryTypesChange"
+                >
+                  <el-option
+                    v-for="item in currentEntryTypes"
+                    :key="item.id"
+                    :label="item.alias"
+                    :value="item.id"                    
+                  />
+                </el-select>
+              </el-form-item>
+
+              <el-form-item label="作品上传" prop="videoUpload">
                 <div class="upload-container">
                   <div class="upload-area" @click="triggerFileInput">
                     <div class="upload-icon">
                       <i class="el-icon-upload"></i>
                     </div>
-                    <p class="upload-text">点击上传视频文件</p>
-                    <p class="upload-hint">支持MP4格式，最大100MB</p>
+                    <p class="upload-text">点击上传文件</p>
+                    <p class="upload-hint">支持{{ currentType.description }}格式，最大100MB</p>
                     <el-button type="primary" plain size="small">选择文件</el-button>
                     <input 
                       ref="fileInput"
@@ -128,7 +159,7 @@
                       id="videoUpload" 
                       name="videoUpload" 
                       style="display: none;" 
-                      accept="video/mp4" 
+                      :accept="currentType.description" 
                       required 
                       @change="handleVideoUploadChange"
                     >
@@ -208,7 +239,6 @@
         title: '参赛作品上传',
         content: '这是参赛作品上传页面',
         uploading: false, // 上传状态
-
         filePreviewText: '',
 
         form: {
@@ -221,9 +251,17 @@
           workName: undefined,
           description: undefined,
           videoUpload: undefined,
+          track: undefined,
+          entryType: undefined
         },
         
         group: undefined,
+
+        // 赛道列表
+        trackList: [
+          { id: 1, name: '学生赛道' },
+          { id: 2, name: '教师赛道' },
+        ],
 
         // 学校列表
         schoolList: [],
@@ -232,6 +270,14 @@
 
         // 项目列表
         projectsList: [],
+        //当前赛道项目列表
+        currentProjectsList: [],
+        // 当前项目允许的提交类型
+        currentEntryTypes: [],
+        // 提交类型
+        currentType: 
+        {alias: "视频", description: ".mp4", id: 1, type: "video"},
+
 
         departDisabled: true,
         
@@ -267,7 +313,7 @@
             { required: true, message: '请输入作品描述', trigger: 'blur' }
           ],
           videoUpload: [
-            { required: true, message: '请上传视频文件', trigger: 'change' }
+            { required: true, message: '请正确上传文件', trigger: 'change' }
           ]
         }
 
@@ -326,6 +372,19 @@
         this.$refs.form.validateField('videoUpload');
       },
 
+      // 处理赛道变化
+      handTrackChange(value) {
+        this.form.track = value;
+        this.currentProjectsList = this.projectsList.filter(item => item.track === value)
+        this.handleProjectChange(undefined)
+      },
+
+      // 当前项目可提交文件类型
+      handEntryTypesChange(value) {
+        this.form.entryType = value;
+        this.currentType = this.currentEntryTypes.find(item => item.id === value);
+      },
+
       // 获取学校/项目列表
       getFormOptions() {
         formOptions().then(res => {
@@ -345,6 +404,9 @@
               this.projectsList.push({
                 name: item.name,
                 id: item.id,
+                track: item.track,
+                description: item.description,
+                entry_types: item.entry_types
               })
             })
           }
@@ -401,6 +463,16 @@
         // 当选择了项目后，检查是否已存在作品
         if (value && this.checkLogin()) {
           this.checkExistingEntry(value);
+          // 更新当前项目的提交类型
+          this.currentEntryTypes = this.projectsList.find(item => item.id === value).entry_types
+          // 如果只有一个提交类型，自动设置为默认值
+          if (this.currentEntryTypes && this.currentEntryTypes.length === 1) {
+            this.form.entryType = this.currentEntryTypes[0].id;
+            this.currentType = this.currentEntryTypes[0];
+          } else {
+            // 否则清空提交类型
+            this.form.entryType = undefined;
+          }
         } else {
           // 清空已存在的作品信息
           this.existingEntry = null;
@@ -409,6 +481,7 @@
           this.form.description = '';
           this.filePreviewText = '';
           this.form.videoUpload = undefined;
+          this.form.entryType = undefined;
         }
         
         // 手动触发项目字段验证
@@ -510,7 +583,7 @@
           }
         });
       }
-    }
+    },
 }
 </script>
 
