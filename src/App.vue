@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <!-- 公告横幅 -->
-    <AnnouncementBanner/>
+    <!-- 公告横幅
+    <AnnouncementBanner/> -->
     
     <!-- <nav>
       <router-link to="/">Home</router-link> |

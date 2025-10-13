@@ -187,7 +187,7 @@
                   
                   <div v-if="existingEntry" class="existing-warning">
                     <i class="el-icon-warning"></i>
-                    检测到您已上传过该作品，修改作品需重新上传视频
+                    检测到您已上传过该作品，如需修改作品请重新上传
                   </div>
                 </div>
               </el-form-item>
@@ -198,7 +198,7 @@
         <!-- 提交按钮 -->
         <div v-if="form.project" class="form-actions">
           <el-button type="primary" @click="submitForm" size="medium" :loading="uploading">
-            <i :class="existingEntry ? 'el-icon-refresh' : 'el-icon-upload'"></i>
+            <i :class="existingEntry ? 'el-icon-refresh' : 'el-icon-upload'"/>
             {{ existingEntry ? '更新作品' : '立即上传' }}
           </el-button>
           <el-button @click="resetForm" size="medium">
@@ -252,7 +252,9 @@
           description: undefined,
           videoUpload: undefined,
           track: undefined,
-          entryType: undefined
+          entryType: undefined,
+          adviser: undefined,
+
         },
         
         group: undefined,
@@ -355,9 +357,26 @@
             return;
           }
           
-          // 检查文件类型
-          if (!file.type.startsWith('video/')) {
-            this.$message.error('请上传视频文件');
+          // 根据当前选择的文件类型动态检查文件格式
+          let isValidType = false;
+          
+          // 根据文件类型进行不同的验证
+          if (this.currentType.type === 'video') {
+            isValidType = file.type.startsWith('video/');
+          } else if (this.currentType.type === 'image') {
+            isValidType = file.type.startsWith('image/');
+          } else if (this.currentType.type === 'pdf') {
+            isValidType = file.type === 'application/pdf';
+          } else if (this.currentType.type === 'ppt') {
+            isValidType = file.type === 'application/vnd.ms-powerpoint' || file.type === 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+          } else if (this.currentType.type === 'zip') {
+            isValidType = file.type === 'application/zip' || file.type === 'application/x-zip-compressed';
+          } else if (this.currentType.type === 'web') {
+            isValidType = file.type === 'text/html';
+          }
+          
+          if (!isValidType) {
+            this.$message.error(`请上传${this.currentType.alias}文件`);
             this.$refs.fileInput.value = '';
             return;
           }
@@ -505,12 +524,16 @@
             // 填充表单信息
             this.form.workName = this.existingEntry.title;
             this.form.description = this.existingEntry.description;
+            this.form.adviser = this.existingEntry.adviser;
+            this.form.videoUpload = this.existingEntry.url;
             
             // 显示文件信息
-            this.filePreviewText = `已存在作品视频文件`;
+            // 获取当前类型的alias
+            const typeAlias = this.currentType && this.currentType.alias ? this.currentType.alias : '视频';
+            this.filePreviewText = `已存在作品${typeAlias}文件`;
             
             // 显示提示信息
-            this.$message.info('检测到您已上传过该作品，可直接修改');
+            this.$message.info(`检测到您已上传过该作品${typeAlias}文件，可直接修改`);
           } else {
             // 不存在作品，清空相关字段
             this.existingEntry = null;
@@ -735,11 +758,14 @@
             
             .preview-info {
               flex: 1;
+
+              p {
+                margin: 0;
+              }
               
               .file-name {
                 font-size: 14px;
                 color: #333;
-                margin-bottom: 5px;
                 word-break: break-all;
               }
               

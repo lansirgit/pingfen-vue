@@ -1,5 +1,5 @@
 <template>
-  <div class="announcement-banner" v-if="visible">
+  <div class="announcement-banner" v-if="true">
     <div class="announcement-content">
       <span class="announcement-icon">📢</span>
       <span class="announcement-text">{{ message }}</span>
