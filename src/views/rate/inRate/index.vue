@@ -6,10 +6,15 @@
         {{ describe }}
       </div>
 
+      <!-- 添加空状态显示 -->
+      <div v-if="!loading && rateList.length === 0" class="empty-state">
+        <el-empty description="暂无评分项目">
+          <el-button type="primary" @click="getRateList">重新加载</el-button>
+        </el-empty>
+      </div>
 
-      <div class="card-row">
+      <div v-else class="card-row">
         <div class="card" v-for="(item, index) in rateList" :key="index" @click="handleClick(item.id)">
-
           <el-card :body-style="{ padding: '0px' }" shadow="hover">
             <div :ref="`chart${index}`" class="charts" :style="{ height: '350px', backgroundColor: '#f5f7fa' }">
             </div>
@@ -37,8 +42,9 @@ export default {
     return {
       rateList: [],
       charts: [],
-      describe: '一、大赛名称 中国解剖学会首届AI应用能力大赛 二、大赛主题 “智启解剖·AI赋能教与学” 三、组织机构 主办单位：中国解剖学会 承办单位：中国解剖学会科技开发与咨询委员会',
-      loading: false
+      describe: '一、大赛名称 中国解剖学会首届AI应用能力大赛 二、大赛主题 “智启解剖·AI赋能教与学” 三、组织机构 主办单位：中国解剖学会 承办单位：中山大学医学院（深圳）和 广东省解剖学会',
+      loading: false,
+      isNavigating: false // 添加这个属性以避免重复点击
     }
   },
   created() {
@@ -178,6 +184,10 @@ export default {
       margin-bottom: 40px;
     }
 
+    .empty-state {
+      text-align: center;
+      padding: 40px 0;
+    }
 
     .card-row {
       display: flex;

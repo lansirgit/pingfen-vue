@@ -20,18 +20,58 @@
           </div>
           
           <div class="work-video-area">
-            <!-- 演示视频区域 -->
-            <div class="video-container" v-if="rateDetail.url">
-              <video 
-                :src="rateDetail.url" 
-                controls
-                preload="metadata"
-                style="width: 100%; height: 100%; object-fit: contain;">
-                您的浏览器不支持视频播放。
-              </video>
+            <!-- 根据文件类型展示不同内容 -->
+            <div class="file-content-container" v-if="rateDetail.url">
+              <!-- 视频文件 -->
+              <div class="video-container" v-if="isVideoFile(rateDetail.url)">
+                <video 
+                  :src="rateDetail.url" 
+                  controls
+                  preload="metadata"
+                  style="width: 100%; height: 100%; object-fit: contain;">
+                  您的浏览器不支持视频播放。
+                </video>
+              </div>
+              
+              <!-- PDF文件 -->
+              <div class="pdf-container" v-else-if="isPdfFile(rateDetail.url)">
+                <iframe 
+                  :src="rateDetail.url" 
+                  style="width: 100%; height: 100%; border: none;"
+                  title="PDF Viewer">
+                </iframe>
+              </div>
+              
+              <!-- 图片文件 -->
+              <div class="image-container" v-else-if="isImageFile(rateDetail.url)">
+                <img 
+                  :src="rateDetail.url" 
+                  alt="作品图片" 
+                  style="max-width: 100%; max-height: 100%; object-fit: contain;">
+              </div>
+              
+              <!-- 其他文件类型提供下载 -->
+              <div class="file-download-container" v-else>
+                <div class="file-info-card">
+                  <div class="file-icon">
+                    <i class="el-icon-document"></i>
+                  </div>
+                  <div class="file-details">
+                    <h3 class="file-name">{{ rateDetail.title }}{{ getFileExtension(rateDetail.url) }}</h3>
+                    <p class="file-type">文件类型: {{ getFileExtension(rateDetail.url).toUpperCase().substring(1) }}</p>
+                    <p class="file-action-tip">此文件需要下载后查看</p>
+                    <el-button 
+                      type="primary" 
+                      @click="downloadFile(rateDetail.url, rateDetail.title)"
+                      icon="el-icon-download">
+                      下载文件
+                    </el-button>
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="video-placeholder" v-else>
-              <el-empty description="暂无视频"></el-empty>
+              <el-empty description="暂无内容"></el-empty>
             </div>
           </div>
 
@@ -64,52 +104,81 @@
             <div class="scoring-content">
               <h3 class="scoring-title">作品评分</h3>
               
-              <div class="scoring-items">
+              <div class="scoring-dimensions">
+                <!-- 按dimension_name分组展示 -->
                 <div 
-                  class="scoring-item" 
-                  v-for="item in scoringCriteria" 
-                  :key="item.id">
-                  <div class="scoring-item-header">
-                    <h4 class="scoring-item-title">{{ item.name }} ({{ item.weight }}分)</h4>
-                    <!-- 每个模块添加一个总评分控件，用于设置该模块的总分 -->
-                    <div class="module-rate">
-                      <el-slider
-                        v-model="item.score"
-                        :min="0"
-                        :max="item.weight"
-                        :step="1"
-                        show-input>
-                      </el-slider>
-                    </div>
+                  class="dimension-group" 
+                  v-for="(group, dimensionName) in groupedScoringCriteria" 
+                  :key="dimensionName">
+                  <div class="dimension-header">
+                    <h3 class="dimension-name">{{ dimensionName }}</h3>
+                    <el-tag type="info" class="dimension-total-score">
+                      总分: {{ calculateDimensionTotal(group) }} 分
+                    </el-tag>
                   </div>
                   
-                  <div class="scoring-item-content">
+                  <div class="dimension-items">
                     <div 
-                      class="score-option"
-                      v-for="(option, index) in getSortedOptions(item)"
-                      :key="index"
-                      :class="{ active: item.score >= option.score }">
-                      <!-- 使用el-rate组件显示每个选项的星星，每行星星数都等于模块权重 -->
-                      <el-rate
-                        :value="getRateValue(item.score, option.score, getPrevOptionScore(item, option))"
-                        :max="item.maxScore"
-                        :disabled="true">
-                      </el-rate>
-                      <span class="score-text">{{ option.text }}</span>
+                      class="scoring-item"
+                      v-for="item in group" 
+                      :key="item.id">
+                      <div class="scoring-item-content">
+                        <div class="item-main">
+                          <div class="item-title">
+                            <span class="item-name">{{ item.name }}</span>
+                            <span class="item-score">({{ item.maxScore }}分)</span>
+                          </div>
+                          
+                          <div class="item-slider-container">
+                            <el-slider
+                              v-model="item.score"
+                              :min="0"
+                              :max="item.maxScore"
+                              :step="1"
+                              show-input
+                              input-size="mini">
+                            </el-slider>
+                          </div>
+                        </div>
+                        
+                        <div class="item-description" v-if="item.description && item.description.trim()">
+                          <i class="el-icon-info description-icon"></i>
+                          <span class="description-text">{{ item.description }}</span>
+                        </div>
+                        
+                        <div class="score-options" v-if="getSortedOptions(item).length > 0">
+                          <div 
+                            class="score-option"
+                            v-for="(option, index) in getSortedOptions(item)"
+                            :key="index"
+                            :class="{ active: item.score >= option.score }">
+                            <el-rate
+                              :value="getRateValue(item.score, option.score, getPrevOptionScore(item, option))"
+                              :max="item.maxScore"
+                              :disabled="true"
+                              size="small">
+                            </el-rate>
+                            <span class="score-text">{{ option.text }}</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
               
-              <div class="total-score">
-                <el-tag type="success" class="total-score-tag">
-                  总分: {{ totalScore }} 分
-                </el-tag>
-              </div>
-              
-              <div class="scoring-actions">
-                <el-button type="primary" @click="submitScore">提交评分</el-button>
-                <el-button @click="resetScore">重置评分</el-button>
+              <div class="total-score-summary">
+                <div class="total-score-display">
+                  <span class="label">总分:</span>
+                  <el-tag type="success" class="total-score-tag">
+                    {{ totalScore }} 分
+                  </el-tag>
+                </div>
+                
+                <div class="scoring-actions">
+                  <el-button type="primary" @click="submitScore">提交评分</el-button>
+                  <el-button @click="resetScore">重置评分</el-button>
+                </div>
               </div>
             </div>
           </div>
@@ -159,6 +228,18 @@ export default {
     // 计算总分
     totalScore() {
       return this.scoringCriteria.reduce((total, item) => total + item.score, 0);
+    },
+    
+    // 按dimension_name分组评分项
+    groupedScoringCriteria() {
+      return this.scoringCriteria.reduce((groups, item) => {
+        const dimensionName = item.dimension_name;
+        if (!groups[dimensionName]) {
+          groups[dimensionName] = [];
+        }
+        groups[dimensionName].push(item);
+        return groups;
+      }, {});
     }
   },
 
@@ -301,6 +382,73 @@ export default {
       }
     },
 
+    // 判断是否为视频文件
+    isVideoFile(url) {
+      if (!url) return false;
+      const videoExtensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm'];
+      const ext = this.getFileExtension(url).toLowerCase();
+      return videoExtensions.includes(ext);
+    },
+    
+    // 判断是否为PDF文件
+    isPdfFile(url) {
+      if (!url) return false;
+      const ext = this.getFileExtension(url).toLowerCase();
+      return ext === '.pdf';
+    },
+    
+    // 判断是否为图片文件
+    isImageFile(url) {
+      if (!url) return false;
+      const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+      const ext = this.getFileExtension(url).toLowerCase();
+      return imageExtensions.includes(ext);
+    },
+
+    // 获取文件名（不含扩展名）
+    getFileNameWithoutExtension(url) {
+      if (!url) return '';
+      try {
+        const urlObj = new URL(url, window.location.origin);
+        const pathname = urlObj.pathname;
+        const fileName = pathname.substring(pathname.lastIndexOf('/') + 1);
+        const lastDotIndex = fileName.lastIndexOf('.');
+        return lastDotIndex !== -1 ? fileName.substring(0, lastDotIndex) : fileName;
+      } catch (e) {
+        // 处理相对路径
+        const lastSlashIndex = url.lastIndexOf('/');
+        const fileName = lastSlashIndex !== -1 ? url.substring(lastSlashIndex + 1) : url;
+        const lastDotIndex = fileName.lastIndexOf('.');
+        return lastDotIndex !== -1 ? fileName.substring(0, lastDotIndex) : fileName;
+      }
+    },
+    
+    // 获取文件扩展名
+    getFileExtension(url) {
+      if (!url) return '';
+      try {
+        const urlObj = new URL(url, window.location.origin);
+        const pathname = urlObj.pathname;
+        const lastDotIndex = pathname.lastIndexOf('.');
+        return lastDotIndex !== -1 ? pathname.substring(lastDotIndex) : '';
+      } catch (e) {
+        // 处理相对路径
+        const lastDotIndex = url.lastIndexOf('.');
+        return lastDotIndex !== -1 ? url.substring(lastDotIndex) : '';
+      }
+    },
+    
+    // 下载文件
+    downloadFile(url, filename) {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename || `作品文件${this.getFileExtension(url)}`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
+
     // 新增：跳转到下一个作品
     goToNextEntry() {
       if (this.entriesList.length <= 1) return;
@@ -334,6 +482,10 @@ export default {
       });
     },
 
+    // 计算维度总分
+    calculateDimensionTotal(group) {
+      return group.reduce((total, item) => total + item.maxScore, 0);
+    },
 
     // 提交评分
     submitScore() {
@@ -347,7 +499,7 @@ export default {
       this.loading = true;
       // 构造评分详情数据
       const scoreDetails = this.scoringCriteria.map(item => ({
-        evaluation_record_id: item.id,
+        evaluation_grade_id: item.id,
         score: item.score
       }));
 
@@ -499,13 +651,76 @@ export default {
           justify-content: center;
           overflow: hidden;
           
-          .video-container {
+          .file-content-container {
             width: 100%;
             height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #000;
+            
+            .video-container,
+            .pdf-container,
+            .image-container {
+              width: 100%;
+              height: 100%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+            
+            .video-container {
+              background-color: #000;
+            }
+            
+            .pdf-container {
+              background-color: #f5f5f5;
+            }
+            
+            .image-container {
+              background-color: #000;
+            }
+            
+            .file-download-container {
+              width: 100%;
+              height: 100%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background-color: #fafafa;
+              
+              .file-info-card {
+                text-align: center;
+                padding: 30px;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+                max-width: 500px;
+                
+                .file-icon {
+                  font-size: 64px;
+                  color: #409EFF;
+                  margin-bottom: 20px;
+                }
+                
+                .file-details {
+                  .file-name {
+                    font-size: 20px;
+                    color: #333;
+                    margin: 0 0 10px 0;
+                    word-break: break-all;
+                  }
+                  
+                  .file-type {
+                    font-size: 16px;
+                    color: #666;
+                    margin: 0 0 10px 0;
+                  }
+                  
+                  .file-action-tip {
+                    font-size: 14px;
+                    color: #999;
+                    margin: 0 0 20px 0;
+                  }
+                }
+              }
+            }
           }
         }
 
@@ -552,6 +767,7 @@ export default {
           min-height: 500px;
           border-radius: 8px;
           padding: 20px;
+          background-color: #f9f9f9;
           
           .scoring-content {
             .scoring-title {
@@ -563,70 +779,167 @@ export default {
               padding-bottom: 10px;
             }
             
-            .scoring-items {
-              .scoring-item {
-                margin-bottom: 20px;
+            .scoring-dimensions {
+              .dimension-group {
+                margin-bottom: 25px;
+                background: white;
+                border-radius: 6px;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+                padding: 15px;
                 
-                .scoring-item-header {
-                  .scoring-item-title {
-                    margin: 0 0 10px 0;
+                .dimension-header {
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  margin-bottom: 15px;
+                  padding-bottom: 10px;
+                  border-bottom: 1px solid #f0f0f0;
+                  
+                  .dimension-name {
+                    margin: 0;
                     color: #333;
-                    font-size: 16px;
-                    text-align: left;
+                    font-size: 18px;
+                    font-weight: 600;
                   }
                   
-                  .module-rate {
-                    margin: 10px 0;
+                  .dimension-total-score {
+                    font-size: 12px;
+                    padding: 3px 8px;
                   }
                 }
                 
-                .scoring-item-content {
-                  .score-option {
-                    display: flex;
-                    align-items: center;
-                    margin-bottom: 8px;
-                    padding: 8px;
+                .dimension-items {
+                  .scoring-item {
+                    margin-bottom: 15px;
+                    padding: 12px;
                     border-radius: 4px;
-                    transition: background-color 0.3s;
+                    background-color: #fafafa;
+                    transition: all 0.3s;
                     
-                    &.active {
+                    &:last-child {
+                      margin-bottom: 0;
+                    }
+                    
+                    &:hover {
                       background-color: #f0f9ff;
+                      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
                     }
                     
-                    ::v-deep .el-rate {
-                      margin-right: 15px;
-                      
-                      .el-rate__icon {
-                        font-size: 16px;
+                    .scoring-item-content {
+                      .item-header {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 8px;
+                        
+                        .item-title {
+                          flex: 1;
+                          display: flex;
+                          align-items: center;
+                          
+                          .item-name {
+                            font-weight: 500;
+                            color: #333;
+                            margin-right: 8px;
+                          }
+                          
+                          .item-score {
+                            font-size: 12px;
+                            color: #999;
+                          }
+                        }
+                        
+                        .item-slider {
+                          width: 200px;
+                          margin-left: 15px;
+                          
+                          ::v-deep .el-slider {
+                            .el-slider__runway {
+                              margin: 8px 0;
+                            }
+                            
+                            .el-slider__input {
+                              width: 60px;
+                            }
+                          }
+                        }
                       }
                       
-                      .el-rate__decimal {
-                        color: #F7BA2A;
+                      .item-description {
+                        font-size: 13px;
+                        color: #666;
+                        margin-bottom: 10px;
+                        line-height: 1.4;
                       }
-                    }
-                    
-                    .score-text {
-                      font-size: 14px;
-                      color: #666;
+                      
+                      .score-options {
+                        .score-option {
+                          display: flex;
+                          align-items: center;
+                          margin-bottom: 6px;
+                          padding: 6px;
+                          border-radius: 3px;
+                          transition: background-color 0.3s;
+                          
+                          &.active {
+                            background-color: #e6f7ff;
+                          }
+                          
+                          ::v-deep .el-rate {
+                            margin-right: 12px;
+                            
+                            .el-rate__icon {
+                              font-size: 14px;
+                            }
+                            
+                            .el-rate__decimal {
+                              color: #F7BA2A;
+                            }
+                          }
+                          
+                          .score-text {
+                            font-size: 13px;
+                            color: #666;
+                            flex: 1;
+                          }
+                        }
+                      }
                     }
                   }
                 }
               }
             }
             
-            .total-score {
-              text-align: center;
-              margin: 20px 0;
+            .total-score-summary {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-top: 20px;
+              padding-top: 15px;
+              border-top: 1px solid #eee;
               
-              .total-score-tag {
-                font-size: 18px;
-                padding: 12px 20px;
-                height: auto;
+              .total-score-display {
+                display: flex;
+                align-items: center;
+                
+                .label {
+                  font-size: 16px;
+                  font-weight: 500;
+                  color: #333;
+                  margin-right: 10px;
+                }
+                
+                .total-score-tag {
+                  font-size: 16px;
+                  padding: 8px 15px;
+                  height: auto;
+                }
               }
-            }
-            
-            .scoring-actions {
-              text-align: center;
+              
+              .scoring-actions {
+                .el-button {
+                  margin-left: 10px;
+                }
+              }
             }
           }
         }
@@ -635,24 +948,42 @@ export default {
   }
 }
 
+
+
 // 响应式设计，小屏幕时改为垂直布局
 @media (max-width: 1200px) {
-  .container .content .main-layout {
+  .scoring-section {
+    width: 100%;
+    padding-left: 0;
+    margin-top: 20px;
+    
+    .scoring-form-area {
+      min-height: auto;
+    }
+  }
+  
+  .scoring-section .scoring-form-area .scoring-content .scoring-dimensions .dimension-group .dimension-items .scoring-item .scoring-item-content .item-header {
+    flex-direction: column;
+    align-items: flex-start;
+    
+    .item-slider {
+      width: 100%;
+      margin-left: 0;
+      margin-top: 10px;
+    }
+  }
+  
+  .total-score-summary {
     flex-direction: column;
     
-    .work-info-section {
-      width: 100%;
-      padding-right: 0;
-      margin-bottom: 20px;
-      
-      .work-video-area {
-        height: 300px;
-      }
+    .total-score-display {
+      margin-bottom: 15px;
     }
     
-    .scoring-section {
-      width: 100%;
-      padding-left: 0;
+    .scoring-actions {
+      .el-button {
+        margin: 0 5px;
+      }
     }
   }
 }
