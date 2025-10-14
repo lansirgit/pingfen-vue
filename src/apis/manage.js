@@ -68,3 +68,17 @@ export function deleteRecord(tableName, recordId) {
     method: 'delete'
   })
 }
+
+/**
+ * 获取作品信息
+ * @param {*} data 
+ * @returns 
+ */
+export function listEntries(data) { 
+  return request({
+    url: `/pingfen/admin/get_entries`,
+    method: 'post',
+    data,
+    isToken: false
+  })
+}
