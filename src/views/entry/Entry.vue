@@ -606,6 +606,7 @@
             
             .file-details {
               flex: 1;
+              min-width: 0;
               
               .file-name {
                 width: 90%;

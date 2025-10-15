@@ -5,7 +5,7 @@ import jsCookie from 'js-cookie'
 const request = axios.create({
 //   baseURL: 'http://127.0.0.1:5000',
   baseURL: process.env.VUE_APP_BASE_URL,
-  timeout: 5000
+  timeout: 600000
 })
 
 // 请求拦截器
