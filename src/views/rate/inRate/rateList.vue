@@ -122,6 +122,8 @@ export default {
     } else {
       this.activeTab = 'unreviewed';
     }
+
+    
     
   },
   
@@ -158,6 +160,10 @@ export default {
           this.projectName = this.reviewedList[0].project_name;
         }
         this.reviewedTotal = res.total_count || 0;
+
+        if(this.reviewedTotal === 0) {
+          this.activeTab = 'unreviewed';
+        }
       }).catch(error => {
         this.reviewedList = [];
         this.reviewedTotal = 0;

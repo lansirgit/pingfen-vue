@@ -126,3 +126,17 @@ export function submitRate(data) {
     isToken: false
   })
 }
+
+/**
+ * 查询详细评分
+ * @param {*} data 
+ * @returns 
+ */
+export function detailRate(data) { 
+  return request({
+    url: '/pingfen/get_evaluation_record_detail',
+    method: 'post',
+    data,
+    isToken: false
+  })
+}

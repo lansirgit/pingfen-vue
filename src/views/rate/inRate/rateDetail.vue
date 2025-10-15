@@ -189,7 +189,7 @@
 </template>
 
 <script>
-import { detailDimensions, detailEntry, submitRate, listUnreviewed, listReviewed } from '@/apis/rate'
+import { detailDimensions, detailEntry, submitRate, listUnreviewed, listReviewed, detailRate } from '@/apis/rate'
 import { getRateId, getToken } from '@/utils/auth'
 
 export default {
@@ -257,16 +257,23 @@ export default {
     }
   },
 
-  created() {
-    // 根据isUpdate判断是否是已评分作品详情页
-    
+  async created() {
     if (this.id) {
-      this.getRateDetail()
-      this.getEntryDetail()
-      // 添加获取作品列表
-      this.getEntriesList()
-    } else {
-      
+      this.loading = true;
+      try {
+        await Promise.all([
+          this.getRateDetail(),
+          this.getEntryDetail()
+        ]);
+        
+        if (this.isUpdate) {
+          await this.getRateDetails();
+        }
+        
+        await this.getEntriesList();
+      } finally {
+        this.loading = false;
+      }
     }
   },
 
@@ -312,6 +319,28 @@ export default {
         // 处理视频URL
         if (this.rateDetail.url) {
           this.rateDetail.url = this.processVideoUrl(this.rateDetail.url);
+        }
+      }).finally(() => {
+        this.loading = false;
+      })
+    },
+
+    // 查询作品评分详情
+    getRateDetails() { 
+      this.loading = true;
+      detailRate({
+        entry_id: this.id,
+        judge_id: getRateId(),
+      }).then(res => {
+        // 处理评分详情回显
+        if (res && res.evaluation && res.evaluation.details) {
+          // 遍历评分细则，将已有的评分回显到对应项中
+          this.scoringCriteria.forEach(criteria => {
+            const detail = res.evaluation.details.find(d => d.evaluation_grade_id === criteria.id);
+            if (detail) {
+              criteria.score = detail.score;
+            }
+          });
         }
       }).finally(() => {
         this.loading = false;
