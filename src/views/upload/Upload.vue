@@ -333,7 +333,7 @@
 
         },
         // 截止时间控制
-        uploadDeadline: new Date('2025-10-15 23:59:59'), // 示例截止时间
+        uploadDeadline: new Date('2025-10-16 23:59:59'), // 示例截止时间
         uploadEnabled: true, // 控制是否允许上传
       }
     },
