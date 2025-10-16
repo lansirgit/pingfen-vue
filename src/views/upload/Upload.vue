@@ -1,6 +1,10 @@
 <template>
   <div class="container">
     <div class="content">
+      <div v-if="isUploadClosed" class="deadline-warning">
+        <i class="el-icon-warning"></i>
+        {{ isAfterDeadline ? '作品上传时间已截止' : '作品上传已关闭' }}
+      </div>
       <div class="top-container">
         <el-page-header @back="goBack" content="参赛作品上传"></el-page-header>
       </div>
@@ -12,14 +16,16 @@
           <div class="header-decoration"></div>
         </div>
         
-        <el-form ref="form" 
+        <el-form 
+          ref="form" 
           :model="form" 
           :rules="rules" 
           label-width="100px" 
           label-position="top" 
           size="medium"
           hide-required-asterisk
-          >
+          :disabled="isUploadClosed"
+        >
 
           <el-form-item label="参加赛道" prop="track">
             <el-select 
@@ -197,11 +203,28 @@
 
         <!-- 提交按钮 -->
         <div v-if="form.project" class="form-actions">
-          <el-button type="primary" @click="submitForm" size="medium" :loading="uploading">
+          <el-button 
+            v-if="!isUploadClosed" 
+            type="primary" 
+            @click="submitForm" 
+            size="medium" 
+            :loading="uploading"
+          >
             <i :class="existingEntry ? 'el-icon-refresh' : 'el-icon-upload'"/>
             {{ existingEntry ? '更新作品' : '立即上传' }}
           </el-button>
-          <el-button @click="resetForm" size="medium">
+          
+          <el-button 
+            v-if="isUploadClosed" 
+            type="info" 
+            disabled 
+            size="medium"
+          >
+            <i class="el-icon-circle-close"></i>
+            上传已关闭
+          </el-button>
+          
+          <el-button @click="resetForm" size="medium" :disabled="isUploadClosed">
             <i class="el-icon-refresh-left"></i>
             重置表单
           </el-button>
@@ -307,13 +330,29 @@
           videoUpload: [
             { required: true, message: '请正确上传文件', trigger: 'change' }
           ]
-        }
+
+        },
+        // 截止时间控制
+        uploadDeadline: new Date('2025-10-15 23:59:59'), // 示例截止时间
+        uploadEnabled: true, // 控制是否允许上传
       }
     },
 
     created() {
       this.getFormOptions()
       this.getUserInfo()
+    },
+
+    computed: {
+      // 计算是否已超过截止时间
+      isAfterDeadline() {
+        return new Date() > this.uploadDeadline;
+      },
+      
+      // 计算是否处于截止状态（时间截止或手动关闭）
+      isUploadClosed() {
+        return this.isAfterDeadline || !this.uploadEnabled;
+      }
     },
 
     methods: {
@@ -614,6 +653,8 @@
     .top-container {
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      gap: 40px;
       padding: 20px;
       border-bottom: 1px solid #eee;
     }
@@ -803,6 +844,29 @@
         }
       }
     }
+  }
+}
+
+.deadline-warning {
+  // width: 70%;
+  flex: 1;
+  padding: 12px 20px;
+  background-color: #FDF6EC;
+  border: 1px solid #FAECD8;
+  color: #E6A23C;
+  text-align: center;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  
+  i {
+    margin-right: 8px;
+    font-weight: bold;
+  }
+}
+
+.form-actions {
+  .el-button.is-disabled {
+    opacity: 0.6;
   }
 }
 
