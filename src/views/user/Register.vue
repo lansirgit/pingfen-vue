@@ -48,7 +48,7 @@
         </el-form-item>
 
         <el-form-item label="所属学校" prop="school">
-          <el-select v-model="registerForm.school" placeholder="请选择学校" @change="handleSchoolChange" clearable>
+          <el-select v-model="registerForm.school" placeholder="请选择学校" @change="handleSchoolChange" filterable clearable>
             <el-option
               v-for="item in schoolList"
               :key="item.name"
@@ -59,7 +59,7 @@
         </el-form-item>
   
         <el-form-item label="所属院系" prop="department">
-          <el-select v-model="registerForm.department" placeholder="请选择院系"  clearable :disabled="departDisabled">
+          <el-select v-model="registerForm.department" placeholder="请选择院系"  clearable filterable :disabled="departDisabled">
             <el-option
               v-for="item in departList"
               :key="item.id"
