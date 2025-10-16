@@ -150,7 +150,7 @@
                 </el-select>
               </el-form-item>
 
-              <el-form-item label="作品上传" prop="videoUpload">
+              <el-form-item label="作品上传" prop="videoUpload" v-show="!(currentEntryTypes && currentEntryTypes.length > 1) || (currentEntryTypes && currentEntryTypes.length > 1 && form.entryType)">
                 <div class="upload-container">
                   <div class="upload-area" @click="triggerFileInput">
                     <div class="upload-icon">
