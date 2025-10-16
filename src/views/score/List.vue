@@ -128,9 +128,9 @@
                         <el-descriptions-item label="评分人数" min-width="120">
                           {{ item.entries[0].count }} 人
                         </el-descriptions-item>
-                        <el-descriptions-item label="参赛总人数" min-width="120">
+                        <!-- <el-descriptions-item label="参赛总人数" min-width="120">
                           {{ item.total_participants }} 人
-                        </el-descriptions-item>
+                        </el-descriptions-item> -->
                       </el-descriptions>
                     </el-col>
                     <el-col :span="8">
