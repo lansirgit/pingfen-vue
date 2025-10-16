@@ -206,11 +206,8 @@
             重置表单
           </el-button>
         </div>
-
       </div>
-
     </div>
-
   </div>
 </template>
 
@@ -269,7 +266,6 @@
         schoolList: [],
         // 院系列表
         departList: [],
-
         // 项目列表
         projectsList: [],
         //当前赛道项目列表
@@ -277,15 +273,10 @@
         // 当前项目允许的提交类型
         currentEntryTypes: [],
         // 提交类型
-        currentType: 
-        {alias: "视频", description: ".mp4", id: 1, type: "video"},
-
-
+        currentType: {alias: "视频", description: ".mp4", id: 1, type: "video"},
         departDisabled: true,
-        
         // 是否已存在作品
         existingEntry: null,
-
         // 表单验证规则
         rules: {
           project: [
@@ -306,7 +297,6 @@
           contact: [
             { required: true, message: '请输入联系方式', trigger: 'blur' },
             { validator: validatePhone, message: '请输入正确的手机号格式', trigger: 'blur' }
-
           ],
           workName: [
             { required: true, message: '请输入作品名称', trigger: 'blur' }
@@ -318,7 +308,6 @@
             { required: true, message: '请正确上传文件', trigger: 'change' }
           ]
         }
-
       }
     },
 
@@ -478,7 +467,6 @@
       // 项目选择变化处理
       handleProjectChange(value) {
         this.form.project = value;
-        
         // 当选择了项目后，检查是否已存在作品
         if (value && this.checkLogin()) {
           this.checkExistingEntry(value);
@@ -502,7 +490,6 @@
           this.form.videoUpload = undefined;
           this.form.entryType = undefined;
         }
-        
         // 手动触发项目字段验证
         this.$refs.form.validateField('project');
       },
@@ -551,7 +538,6 @@
           this.form.description = '';
           this.filePreviewText = '';
           this.form.videoUpload = undefined;
-
         });
       },
 
@@ -568,7 +554,6 @@
       submitForm() {
         this.$refs.form.validate((valid) => {
           if (valid) {
-            
             // 设置上传状态
             this.uploading = true;
             

@@ -63,7 +63,6 @@ export default {
           this.initCharts();
         });
         this.loading = false;
-        
       })
     },
 
@@ -71,9 +70,7 @@ export default {
     handleClick(id, type) {
       // 防止重复点击
       if (this.isNavigating) return;
-      
       this.isNavigating = true;
-      
       this.$router.push({
         path: '/rate/rateList',
         query: {
@@ -94,13 +91,11 @@ export default {
       });
     },
 
-
     // 初始化图表
     initCharts() {
       this.rateList.forEach((item, index) => {
         const chartDom = this.$refs[`chart${index}`][0];
         const myChart = echarts.init(chartDom);
-        
         const option = {
           tooltip: {
             trigger: 'item'

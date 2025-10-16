@@ -268,30 +268,22 @@ export default {
       activeProject: null,
       dialogVisible: false,
       chartInstances: [],
-
       // 项目列表
       projectList: [],
-      
       // 当前项目名称
       currentProjectName: '',
-
       // 个人作品列表
       userEntryList: [],
-      
       // 用户信息
       userInfo: null,
-
       // 作品列表
       entryList: [],
-
       // 分页
       total: 0,
       currentPage: 1,
       pageSize: 10,
-
       // 加载状态
       pageLoading: false,
-      
       // 滚动控制
       showScrollLeft: false,
       showScrollRight: false
@@ -318,7 +310,6 @@ export default {
     this.$nextTick(() => {
       this.checkScroll();
     });
-    
     window.addEventListener('resize', this.checkScroll);
   },
   
@@ -713,7 +704,6 @@ export default {
               overflow-y: auto;
               
               .project-item {
-                // width: calc(33.33% - 10px);
                 
                 @media (max-width: 768px) {
                   width: calc(50% - 10px);

@@ -20,7 +20,6 @@
               <template #default="scope">
                 <el-button type="warning" size="mini" plain @click="handleDetail(scope.row.id, true)">修改评分</el-button>
 
-
               </template>
             </el-table-column>
           </el-table>
@@ -88,6 +87,7 @@
 
 <script>
 import { listReviewed, listUnreviewed } from '@/apis/rate';
+import { getRateId } from '@/utils/auth';
 
 export default {
   data() {
@@ -122,8 +122,6 @@ export default {
     } else {
       this.activeTab = 'unreviewed';
     }
-
-    
     
   },
   
@@ -151,7 +149,7 @@ export default {
         project_id: this.projectId,
         page_number: this.reviewedCurrentPage,
         page_size: this.pageSize,
-        judge_id: 19
+        judge_id: getRateId()
       };
 
       return listReviewed(data).then(res => {
@@ -177,7 +175,7 @@ export default {
         project_id: this.projectId,
         page_number: this.unreviewedCurrentPage,
         page_size: this.pageSize,
-        judge_id: 19
+        judge_id: getRateId()
       };
 
       return listUnreviewed(data).then(res => {
@@ -194,7 +192,6 @@ export default {
     // 切换tab
     handleClick(tab) {
       this.activeTab = tab.name;
-      
     },
 
     // 跳转评分详情页面

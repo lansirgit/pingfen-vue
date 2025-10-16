@@ -103,7 +103,6 @@
             <!-- 打分表单区域 -->
             <div class="scoring-content">
               <h3 class="scoring-title">作品评分</h3>
-              
               <div class="scoring-dimensions">
                 <!-- 按dimension_name分组展示 -->
                 <div 
