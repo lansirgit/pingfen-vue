@@ -75,7 +75,7 @@ export default {
           title: '榜单查看',
           icon: require('@/assets/img/fa-table.png'),
           path: '/score',
-          isLogin: 'show'
+          isLogin: 'false'
         },
         {
           title: '个人中心',
