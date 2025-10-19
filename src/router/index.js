@@ -140,6 +140,14 @@ const routes = [
     }
   },
   {
+    path: '/inform',
+    name: 'inform',
+    component: () => import('../views/inform/inform.vue'),
+    meta: {
+      title: '赛事通知'
+    }
+  },
+  {
     path: '/entry',
     name: 'entry',
     component: () => import('../views/entry/Entry.vue'),

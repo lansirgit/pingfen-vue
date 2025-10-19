@@ -54,6 +54,12 @@ export default {
           isLogin: 'show'
         },
         {
+          title: '赛事通知',
+          icon: require('@/assets/img/fa-info.png'),
+          path: '/inform',
+          isLogin: 'show'
+        },
+        {
           title: '作品上传/修改',
           icon: require('@/assets/img/fa-upload.png'),
           path: '/upload',
