@@ -30,19 +30,20 @@ const routes = [
   {
     path: '/upload',
     name: 'upload',
-    component: () => import('../views/upload/Upload.vue'),
+    // component: () => import('../views/upload/Upload.vue'),
+    component: () => import('../views/closed.vue'),
     meta: {
       title: '作品上传/修改'
     }
   },
-  {
-    path: '/score',
-    name: 'score',
-    component: () => import('../views/score/List.vue'),
-    meta: {
-      title: '榜单查看'
-    }
-  },
+  // {
+  //   path: '/score',
+  //   name: 'score',
+  //   component: () => import('../views/score/List.vue'),
+  //   meta: {
+  //     title: '榜单查看'
+  //   }
+  // },
   {
     path: '/rate',
     name: 'rate',
@@ -94,7 +95,8 @@ const routes = [
   {
     path: '/login',
     name: 'login',
-    component: () => import('../views/user/Login.vue'),
+    // component: () => import('../views/user/Login.vue'),
+    component: () => import('../views/closed.vue'),
     meta: {
       title: '用户登录'
     }
@@ -102,7 +104,8 @@ const routes = [
   {
     path: '/register',
     name: 'register',
-    component: () => import('../views/user/Register.vue'),
+    // component: () => import('../views/user/Register.vue'),
+    component: () => import('../views/closed.vue'),
     meta: {
       title: '用户注册'
     }
@@ -110,7 +113,8 @@ const routes = [
   {
     path: '/info',
     name: 'info',
-    component: () => import('../views/user/Info.vue'),
+    // component: () => import('../views/user/Info.vue'),
+    component: () => import('../views/closed.vue'),
     meta: {
       title: '用户信息'
     }
